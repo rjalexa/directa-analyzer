@@ -2,6 +2,8 @@
 
 Questo strumento permette di visualizzare e analizzare la performance reale degli investimenti effettuati tramite la piattaforma Directa, filtrando i depositi e i prelievi che normalmente alterano la visualizzazione del grafico "Patrimonio".
 
+> **⚠️ Attribution / Crediti**: Questo progetto è basato sul lavoro originale di [ilbonte/directa-analyzer](https://github.com/ilbonte/directa-analyzer). Questo fork è stato sviluppato per portare l'applicazione su uno stack **Vite/React/Tailwind** e aggiungere nuove funzionalità e informazioni.
+
 ## 🎯 Obiettivo del Progetto
 
 Il grafico standard del "Patrimonio" su Directa include i versamenti e i prelievi di liquidità. Questo rende difficile comprendere il reale andamento degli investimenti (Guadagno/Perdita), poiché un semplice bonifico in entrata appare come un aumento del patrimonio, anche se non è frutto di una performance di mercato.
