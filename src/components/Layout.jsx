@@ -21,6 +21,9 @@ export function Layout({ children }) {
                 </main>
                 <footer className="mt-12 text-center text-gray-400 text-sm">
                     <p>© {new Date().getFullYear()} Directa Analyzer. Progetto Open Source.</p>
+                    <p className="mt-2">
+                        Basato sul <a href="https://github.com/ilbonte/directa-analyzer" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">codice originale</a> di ilbonte
+                    </p>
                 </footer>
             </div>
         </div>
