@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { TrendingUp, TrendingDown, DollarSign, Percent, Activity, Wallet, ArrowUpRight, ArrowDownRight, Info, Mountain, Skull } from 'lucide-react';
-import { formatCurrency, formatPercentage, findMaxGainAndLoss, findLongestSequences } from '../utils/calculations';
+import { TrendingUp, TrendingDown, DollarSign, Percent, Activity, Wallet, ArrowUpRight, ArrowDownRight, Info, Mountain, Skull, Timer } from 'lucide-react';
+import { formatCurrency, formatPercentage, findMaxGainAndLoss, findLongestSequences, calculateLongestRecovery } from '../utils/calculations';
 
 function StatCard({ title, value, icon: Icon, trend, subValue, color = "blue", info }) {
     const [showInfo, setShowInfo] = useState(false);
@@ -59,6 +59,7 @@ function StatCard({ title, value, icon: Icon, trend, subValue, color = "blue", i
 export function StatsCards({ stats }) {
     const { maxGain, maxLoss } = findMaxGainAndLoss(stats.dailyGains);
     const { maxRiseSequence, maxDropSequence } = findLongestSequences(stats.dailyGains);
+    const longestRecovery = calculateLongestRecovery(stats.dailyGains);
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
@@ -157,6 +158,21 @@ export function StatsCards({ stats }) {
                         </div>
                         <div className="bg-white p-3 rounded-xl shadow-sm">
                             <Skull className="w-6 h-6 text-orange-600" />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-blue-50/50 p-6 rounded-2xl border border-blue-100">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-blue-800 mb-1">Tempo max recupero</p>
+                            <h4 className="text-xl font-bold text-blue-900">{longestRecovery.days} giorni</h4>
+                            {longestRecovery.days > 0 && (
+                                <p className="text-sm text-blue-600 mt-1">{longestRecovery.startDate} - {longestRecovery.endDate}</p>
+                            )}
+                        </div>
+                        <div className="bg-white p-3 rounded-xl shadow-sm">
+                            <Timer className="w-6 h-6 text-blue-600" />
                         </div>
                     </div>
                 </div>

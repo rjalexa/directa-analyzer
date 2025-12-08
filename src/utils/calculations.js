@@ -254,3 +254,56 @@ export function formatPercentage(value) {
         maximumFractionDigits: 2
     }).format(value);
 }
+
+export function calculateLongestRecovery(dailyGains) {
+    if (!dailyGains || dailyGains.length === 0) return { days: 0, startDate: null, endDate: null };
+
+    let maxPeak = -Infinity;
+    let peakDate = null;
+    
+    let maxRecoveryDays = 0;
+    let maxRecoveryStartDate = null;
+    let maxRecoveryEndDate = null;
+
+    // Helper to parse "dd/mm/yyyy" to Date object
+    const parseDate = (dateStr) => {
+        const [day, month, year] = dateStr.split('/');
+        return new Date(year, month - 1, day);
+    };
+
+    dailyGains.forEach(day => {
+        const currentVal = day.cumulativeGainLoss;
+        const currentDate = parseDate(day.date);
+
+        // Initialize first peak
+        if (peakDate === null) {
+            maxPeak = currentVal;
+            peakDate = currentDate;
+            return;
+        }
+
+        // If we found a new peak (surpassed previous high)
+        if (currentVal > maxPeak) {
+            // Calculate how long it took to get back here
+            const diffTime = Math.abs(currentDate - peakDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            // If this recovery took longer than any previous one, record it
+            if (diffDays > maxRecoveryDays) {
+                maxRecoveryDays = diffDays;
+                maxRecoveryStartDate = peakDate;
+                maxRecoveryEndDate = currentDate;
+            }
+
+            // Update the new High Water Mark
+            maxPeak = currentVal;
+            peakDate = currentDate;
+        }
+    });
+
+    return {
+        days: maxRecoveryDays,
+        startDate: maxRecoveryStartDate ? maxRecoveryStartDate.toLocaleDateString('it-IT') : null,
+        endDate: maxRecoveryEndDate ? maxRecoveryEndDate.toLocaleDateString('it-IT') : null
+    };
+}
