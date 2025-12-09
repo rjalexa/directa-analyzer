@@ -63,7 +63,7 @@ export function Instructions() {
                         <h3 className="font-semibold text-gray-900 mb-2">Come usarlo?</h3>
                         <ol className="list-decimal list-inside space-y-3 ml-1">
                             <li className="pl-2">
-                                <span className="font-medium">Accedi a Directa</span> (piattaforma Libera).
+                                <span className="font-medium">Accedi a Directa</span> (piattaforma Libera da browser, non dalle App).
                             </li>
                             <li className="pl-2">
                                 Vai su: <span className="bg-gray-200 px-1.5 py-0.5 rounded text-gray-800 text-xs font-mono">Conto &rarr; Patrimonio &rarr; Storico</span>.
