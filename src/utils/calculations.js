@@ -140,6 +140,7 @@ export function calculateStats(portfolioData, alignedMovements) {
                 gainLoss: gainLoss,
                 cumulativeGainLoss: cumulativeGainLoss,
                 cumulativeInvestment: cumulativeInvestment,
+                totalValue: currentPatrimonio,
                 twrr: cumulativeTWRR - 1
             });
         }

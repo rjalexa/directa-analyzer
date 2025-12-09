@@ -52,6 +52,16 @@ export function PerformanceChart({ dailyGains }) {
                 pointHoverRadius: 4,
             },
             {
+                label: 'Valore Totale',
+                data: dailyGains.map(day => day.totalValue),
+                borderColor: 'rgb(16, 185, 129)', // emerald-500
+                borderWidth: 2,
+                tension: 0.1,
+                yAxisID: 'y1',
+                pointRadius: 0,
+                pointHoverRadius: 4,
+            },
+            {
                 label: 'TWRR (%)',
                 data: dailyGains.map(day => day.twrr * 100),
                 borderColor: 'rgb(147, 51, 234)', // purple-600
@@ -148,12 +158,12 @@ export function PerformanceChart({ dailyGains }) {
                 position: 'right',
                 title: {
                     display: true,
-                    text: 'Investimenti (€)',
-                    color: 'rgb(220, 38, 38)',
+                    text: 'Investimenti / Totale (€)',
+                    color: 'rgb(75, 85, 99)', // gray-600
                     font: { weight: 'bold' }
                 },
                 ticks: {
-                    color: 'rgb(220, 38, 38)'
+                    color: 'rgb(75, 85, 99)' // gray-600
                 },
                 grid: {
                     drawOnChartArea: false
