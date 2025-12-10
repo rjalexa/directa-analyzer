@@ -86,7 +86,7 @@ export function StatsCards({ stats }) {
                     info="Guadagno o perdita totale in euro. Calcolato sommando le variazioni giornaliere del portafoglio, escludendo l'impatto di versamenti e prelievi."
                 />
                 <StatCard
-                    title="G/L %"
+                    title="MWRR"
                     value={formatPercentage(stats.totalGainLossPercentage)}
                     icon={Percent}
                     color="blue"
