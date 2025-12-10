@@ -57,6 +57,21 @@ export function DateRangeFilter({ dateRange, setDateRange, minMaxDates, onReset 
                     />
                 </div>
             </div>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+                {[2023, 2024, 2025].map((year) => (
+                    <button
+                        key={year}
+                        onClick={() => setDateRange({
+                            startDate: `${year}-01-01`,
+                            endDate: `${year}-12-31`
+                        })}
+                        className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200"
+                    >
+                        {year}
+                    </button>
+                ))}
+            </div>
         </div>
     );
 }
