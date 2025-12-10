@@ -3,7 +3,7 @@ name: Deploy Vite app to GitHub Pages
 on:
   push:
     branches:
-      - react-refactor    # deploy whenever you push here
+      - main    # deploy whenever you push here
 
 jobs:
   deploy:
