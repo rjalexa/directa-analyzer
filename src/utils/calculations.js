@@ -95,6 +95,20 @@ export function alignMovementDates(portfolioData, movimentiData) {
 
 
 export function calculateStats(portfolioData, alignedMovements) {
+    if (!portfolioData || portfolioData.length === 0) {
+        return {
+            dailyGains: [],
+            totalGainLoss: 0,
+            totalGainLossPercentage: 0,
+            totalTwrr: 0,
+            cagr: 0,
+            totalInvestments: 0,
+            patrimonyInitial: 0,
+            patrimonyFinal: 0,
+            totalMovements: 0
+        };
+    }
+
     let cumulativeGainLoss = 0;
     let cumulativeInvestment = 0;
     const dailyGains = [];
@@ -179,6 +193,13 @@ export function calculateStats(portfolioData, alignedMovements) {
 }
 
 export function findMaxGainAndLoss(dailyGains) {
+    if (!dailyGains || dailyGains.length === 0) {
+        return {
+            maxGain: { date: null, gainLoss: 0 },
+            maxLoss: { date: null, gainLoss: 0 }
+        };
+    }
+
     let maxGain = { gainLoss: -Infinity };
     let maxLoss = { gainLoss: Infinity };
 
