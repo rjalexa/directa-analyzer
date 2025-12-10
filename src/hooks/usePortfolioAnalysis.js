@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { parseCSV } from '../utils/csvParser';
 import { alignMovementDates, calculateStats } from '../utils/calculations';
 
@@ -44,28 +44,48 @@ export function usePortfolioAnalysis() {
         }
     }, []);
 
-    const analysisResults = useMemo(() => {
-        if (!globalPortfolioData.length || !dateRange.startDate || !dateRange.endDate) {
-            return null;
+    const [analysisResults, setAnalysisResults] = useState(null);
+
+    useEffect(() => {
+        if (!globalPortfolioData.length) {
+            setAnalysisResults(null);
+            return;
+        }
+
+        // Wait for valid dates before recomputing
+        if (!dateRange.startDate || !dateRange.endDate) {
+            return;
         }
 
         const startDate = new Date(dateRange.startDate);
         const endDate = new Date(dateRange.endDate);
 
-        const filteredPortfolioData = globalPortfolioData.filter(d => {
-            const date = new Date(d.date.split('/').reverse().join('-'));
-            return date >= startDate && date <= endDate;
-        });
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+            return;
+        }
 
-        const filteredMovimentiData = globalMovimentiData.filter(d => {
-            const date = new Date(d.date.split('/').reverse().join('-'));
-            return date >= startDate && date <= endDate;
-        });
+        if (startDate > endDate) {
+            return;
+        }
 
-        const alignedMovements = alignMovementDates(filteredPortfolioData, filteredMovimentiData);
-        const stats = calculateStats(filteredPortfolioData, alignedMovements);
+        try {
+            const filteredPortfolioData = globalPortfolioData.filter(d => {
+                const date = new Date(d.date.split('/').reverse().join('-'));
+                return date >= startDate && date <= endDate;
+            });
 
-        return { stats, alignedMovements };
+            const filteredMovimentiData = globalMovimentiData.filter(d => {
+                const date = new Date(d.date.split('/').reverse().join('-'));
+                return date >= startDate && date <= endDate;
+            });
+
+            const alignedMovements = alignMovementDates(filteredPortfolioData, filteredMovimentiData);
+            const stats = calculateStats(filteredPortfolioData, alignedMovements);
+
+            setAnalysisResults({ stats, alignedMovements });
+        } catch (e) {
+            console.error("Error calculating analysis results:", e);
+        }
     }, [globalPortfolioData, globalMovimentiData, dateRange]);
 
     const resetDateRange = useCallback(() => {
