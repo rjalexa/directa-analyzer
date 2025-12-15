@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -22,9 +22,8 @@ ChartJS.register(
     Filler
 );
 
-export function PerformanceChart({ dailyGains }) {
+export function PerformanceChart({ dailyGains, hiddenDatasets, setHiddenDatasets }) {
     const chartRef = useRef(null);
-    const [hiddenDatasets, setHiddenDatasets] = useState([]);
 
     // Dataset indices in the new order:
     // 0: TWRR
@@ -44,6 +43,11 @@ export function PerformanceChart({ dailyGains }) {
         y1Title = 'Movimenti (€)';
     }
     const showY1 = !(isMovimentiHidden && isPatrimonioHidden);
+
+    // Calculate padding to keep the grid start fixed (max left width = 80 + 50 = 130)
+    const leftAxesWidth = (isGlHidden ? 0 : 80) + (isTwrrHidden ? 0 : 50);
+    const maxLeftWidth = 130;
+    const paddingLeft = maxLeftWidth - leftAxesWidth;
 
     const data = {
         labels: dailyGains.map(day => day.date),
@@ -101,6 +105,12 @@ export function PerformanceChart({ dailyGains }) {
     const options = {
         responsive: true,
         maintainAspectRatio: false,
+        layout: {
+            padding: {
+                left: paddingLeft,
+                right: 0
+            }
+        },
         interaction: {
             mode: 'index',
             intersect: false,
@@ -183,6 +193,9 @@ export function PerformanceChart({ dailyGains }) {
                 },
                 grid: {
                     color: '#f3f4f6'
+                },
+                afterFit: (axis) => {
+                    axis.width = 80;
                 }
             },
             y1: {
@@ -200,6 +213,9 @@ export function PerformanceChart({ dailyGains }) {
                 },
                 grid: {
                     drawOnChartArea: false
+                },
+                afterFit: (axis) => {
+                    axis.width = 80;
                 }
             },
             y2: {
@@ -217,6 +233,9 @@ export function PerformanceChart({ dailyGains }) {
                 },
                 grid: {
                     drawOnChartArea: false
+                },
+                afterFit: (axis) => {
+                    axis.width = 50;
                 }
             }
         }
