@@ -25,9 +25,21 @@ ChartJS.register(
     Filler
 );
 
-export function UnderwaterChart({ dailyGains }) {
+export function UnderwaterChart({ dailyGains, referenceChartHiddenDatasets = [] }) {
     const [showInfo, setShowInfo] = useState(false);
     const drawdowns = calculateDrawdowns(dailyGains);
+
+    // Calculate padding to align with PerformanceChart
+    const isMovimentiHidden = referenceChartHiddenDatasets.includes(2);
+    const isPatrimonioHidden = referenceChartHiddenDatasets.includes(3);
+    const showY1 = !(isMovimentiHidden && isPatrimonioHidden);
+
+    // Align with PerformanceChart's fixed left width (130px)
+    const rightSpace = (showY1 ? 80 : 0);
+    const myAxisWidth = 50;
+    const maxLeftWidth = 130;
+    const paddingLeft = maxLeftWidth - myAxisWidth;
+    const paddingRight = rightSpace;
 
     const data = {
         labels: drawdowns.map(d => d.date),
@@ -48,6 +60,12 @@ export function UnderwaterChart({ dailyGains }) {
     const options = {
         responsive: true,
         maintainAspectRatio: false,
+        layout: {
+            padding: {
+                left: paddingLeft,
+                right: paddingRight
+            }
+        },
         interaction: {
             mode: 'index',
             intersect: false,
@@ -84,6 +102,9 @@ export function UnderwaterChart({ dailyGains }) {
                     callback: function(value) {
                         return value + '%';
                     }
+                },
+                afterFit: (axis) => {
+                    axis.width = myAxisWidth;
                 }
             }
         }

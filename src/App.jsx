@@ -22,6 +22,8 @@ function App() {
         resetDateRange
     } = usePortfolioAnalysis();
 
+    const [performanceChartHiddenDatasets, setPerformanceChartHiddenDatasets] = React.useState([]);
+
     return (
         <Layout>
             <FileUpload
@@ -43,10 +45,20 @@ function App() {
                     <StatsCards stats={analysisResults.stats} />
                     
                     <div className="mt-8 space-y-8">
-                        <PerformanceChart dailyGains={analysisResults.stats.dailyGains} />
+                        <PerformanceChart
+                            dailyGains={analysisResults.stats.dailyGains}
+                            hiddenDatasets={performanceChartHiddenDatasets}
+                            setHiddenDatasets={setPerformanceChartHiddenDatasets}
+                        />
                         
-                        <UnderwaterChart dailyGains={analysisResults.stats.dailyGains} />
-                        <RollingSharpeChart dailyGains={analysisResults.stats.dailyGains} />
+                        <UnderwaterChart
+                            dailyGains={analysisResults.stats.dailyGains}
+                            referenceChartHiddenDatasets={performanceChartHiddenDatasets}
+                        />
+                        <RollingSharpeChart
+                            dailyGains={analysisResults.stats.dailyGains}
+                            referenceChartHiddenDatasets={performanceChartHiddenDatasets}
+                        />
                         
                         <MonthlyReturnsHeatmap dailyGains={analysisResults.stats.dailyGains} />
                     </div>

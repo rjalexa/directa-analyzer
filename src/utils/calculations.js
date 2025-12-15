@@ -1,98 +1,146 @@
 export function alignMovementDates(portfolioData, movimentiData) {
     const windowDays = 3;
     const tolerance = 0.01;
+    const approxTolerancePercent = 0.05; // 5% tolerance allows linking deposits to days with market movement
     const alignedMovements = [];
 
     movimentiData.forEach(movement => {
         const movementDate = new Date(movement.date.split('/').reverse().join('-'));
         const movementValue = movement.value;
-        let bestExactMatch = null;
+        
+        let sameDayExactMatch = null;
+        let sameDayApproxMatch = null;
+        let windowExactMatch = null;
         let bestClosestMatch = null;
         let smallestDayDiff = Infinity;
 
+        // Check the very first portfolio day as a candidate for "closest match"
+        // This handles cases where a deposit happens on the start date (Day 0)
+        // and is already included in the initial equity.
+        if (portfolioData.length > 0) {
+            const firstPortfolio = portfolioData[0];
+            const firstDate = new Date(firstPortfolio.date.split('/').reverse().join('-'));
+            const firstDiff = Math.abs((firstDate - movementDate) / (86400000));
+            
+            if (firstDiff < smallestDayDiff) {
+                smallestDayDiff = firstDiff;
+                bestClosestMatch = {
+                    date: firstPortfolio.date,
+                    type: 'closest',
+                    diff: firstDiff
+                };
+            }
+        }
+
+        // Iterate through all portfolio days to find the best candidate
         for (let i = 0; i < portfolioData.length - 1; i++) {
             const currPortfolio = portfolioData[i];
             const nextPortfolio = portfolioData[i + 1];
 
-            const currDate = new Date(currPortfolio.date.split('/').reverse().join('-'));
-            const daysDiff = Math.abs((currDate - movementDate) / (86400000));
+            // In Directa/Portfolio math, the change happens *to* the next date (Change = Next - Curr)
+            // So we compare the movement date against the Next Portfolio Date
+            const nextDate = new Date(nextPortfolio.date.split('/').reverse().join('-'));
+            const daysDiff = Math.abs((nextDate - movementDate) / (86400000));
 
             if (daysDiff > windowDays) continue;
 
-            // Calcola le variazioni
             const liquidityChange = nextPortfolio.liquidita - currPortfolio.liquidita;
             const finanziamentoChange = currPortfolio.finanziamento - nextPortfolio.finanziamento;
-            const totalChange = liquidityChange + finanziamentoChange;
+            const cashChange = liquidityChange + finanziamentoChange;
+            const patrimonioChange = nextPortfolio.patrimonio - currPortfolio.patrimonio;
 
-            // Verifica corrispondenze esatte
-            if (Math.abs(totalChange - movementValue) <= tolerance) {
-                bestExactMatch = {
-                    date: nextPortfolio.date,
-                    type: 'total',
-                    diff: Math.abs(totalChange - movementValue)
-                };
-                break; // Priorità massima, interrompe la ricerca
+            // Check for Exact Matches (Value matches perfectly within 1 cent)
+            const isCashExact = Math.abs(cashChange - movementValue) <= tolerance;
+            const isLiqExact = Math.abs(liquidityChange - movementValue) <= tolerance;
+            const isFinExact = Math.abs(finanziamentoChange - movementValue) <= tolerance;
+            const isPatrimonioExact = Math.abs(patrimonioChange - movementValue) <= tolerance;
+
+            const matchObj = {
+                date: nextPortfolio.date,
+                diff: 0,
+                type: isPatrimonioExact ? 'total' : (isCashExact ? 'cash' : (isLiqExact ? 'liquidità' : 'finanziamento'))
+            };
+
+            if (isPatrimonioExact || isCashExact || isLiqExact || isFinExact) {
+                if (daysDiff < 0.5) {
+                    sameDayExactMatch = matchObj;
+                } else {
+                    // If we already have a window match, only replace it if this one is closer in time
+                    if (!windowExactMatch || daysDiff < Math.abs((new Date(windowExactMatch.date.split('/').reverse().join('-')) - movementDate) / 86400000)) {
+                        windowExactMatch = matchObj;
+                    }
+                }
             }
 
-            // Verifica corrispondenza solo liquidità
-            if (!bestExactMatch && Math.abs(liquidityChange - movementValue) <= tolerance) {
-                bestExactMatch = {
-                    date: nextPortfolio.date,
-                    type: 'liquidità',
-                    diff: Math.abs(liquidityChange - movementValue)
-                };
+            // Check for Approximate Match (Must be SAME DAY)
+            // This handles cases where market movement happens on the same day as a deposit
+            if (daysDiff < 0.5) {
+                // Use Patrimonio Change for approx match, as it captures the full value even if invested
+                const diffVal = Math.abs(patrimonioChange - movementValue);
+                
+                // If the Portfolio change is within 5% of the movement value, it's likely the right day
+                if (diffVal <= (Math.abs(movementValue) * approxTolerancePercent)) {
+                    // Only record if we don't have a better approx match yet
+                    if (!sameDayApproxMatch || diffVal < sameDayApproxMatch.diff) {
+                        sameDayApproxMatch = {
+                            date: nextPortfolio.date,
+                            type: 'approx_total',
+                            diff: diffVal
+                        };
+                    }
+                }
             }
 
-            // Verifica corrispondenza solo finanziamento
-            if (!bestExactMatch && Math.abs(finanziamentoChange - movementValue) <= tolerance) {
-                bestExactMatch = {
-                    date: nextPortfolio.date,
-                    type: 'finanziamento',
-                    diff: Math.abs(finanziamentoChange - movementValue)
-                };
-            }
-
-            // Aggiorna la data più vicina
+            // Track purely the closest date as a fallback
             if (daysDiff < smallestDayDiff) {
                 smallestDayDiff = daysDiff;
                 bestClosestMatch = {
-                    date: currPortfolio.date,
+                    date: nextPortfolio.date,
                     type: 'closest',
                     diff: daysDiff
                 };
             }
         }
 
-        // Gestione risultati
-        if (bestExactMatch) {
-            alignedMovements.push({
-                date: bestExactMatch.date,
-                value: movementValue,
-                originalDate: movement.date,
-                matchedType: bestExactMatch.type
-            });
-        } else if (bestClosestMatch) {
-            alignedMovements.push({
-                date: bestClosestMatch.date,
-                value: movementValue,
-                originalDate: movement.date,
-                matchedType: bestClosestMatch.type
-            });
-            console.log(`Warning: No exact match for movement on ${movement.date} of ${movementValue}€. Assigned closest date ${bestClosestMatch.date}`);
+        // --- SELECTION PRIORITY ---
+        // 1. Exact Value match on the Same Date (Ideal)
+        // 2. Approximate Value match on the Same Date (Fixes your issue: 50k deposit vs 50.5k portfolio change)
+        // 3. Exact Value match on a Different Date (Bank delays)
+        // 4. Closest Date fallback
+        
+        let finalMatch = null;
+
+        if (sameDayExactMatch) {
+            finalMatch = sameDayExactMatch;
+        } else if (sameDayApproxMatch) {
+            finalMatch = sameDayApproxMatch;
+        } else if (windowExactMatch) {
+            finalMatch = windowExactMatch;
         } else {
+            finalMatch = bestClosestMatch;
+        }
+
+        if (finalMatch) {
+            alignedMovements.push({
+                date: finalMatch.date,
+                value: movementValue,
+                originalDate: movement.date,
+                matchedType: finalMatch.type
+            });
+        } else {
+            // Should theoretically not reach here if portfolio exists, but acts as safety net
             alignedMovements.push({
                 date: movement.date,
                 value: movementValue,
                 originalDate: movement.date,
                 matchedType: 'none'
             });
-            console.log(`Warning: No matching date found within window for movement on ${movement.date} of ${movementValue}€`);
+            console.log(`Warning: No match found for ${movement.date}`);
         }
     });
 
     return alignedMovements;
 }
-
 
 export function calculateStats(portfolioData, alignedMovements) {
     if (!portfolioData || portfolioData.length === 0) {
