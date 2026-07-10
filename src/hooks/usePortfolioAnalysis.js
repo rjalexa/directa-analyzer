@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { parseCSV } from '../utils/csvParser';
 import { alignMovementDates, calculateStats } from '../utils/calculations';
 
@@ -44,28 +44,25 @@ export function usePortfolioAnalysis() {
         }
     }, []);
 
-    const [analysisResults, setAnalysisResults] = useState(null);
-
-    useEffect(() => {
+    const analysisResults = useMemo(() => {
         if (!globalPortfolioData.length) {
-            setAnalysisResults(null);
-            return;
+            return null;
         }
 
         // Wait for valid dates before recomputing
         if (!dateRange.startDate || !dateRange.endDate) {
-            return;
+            return null;
         }
 
         const startDate = new Date(dateRange.startDate);
         const endDate = new Date(dateRange.endDate);
 
         if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-            return;
+            return null;
         }
 
         if (startDate > endDate) {
-            return;
+            return null;
         }
 
         try {
@@ -82,9 +79,10 @@ export function usePortfolioAnalysis() {
             const alignedMovements = alignMovementDates(filteredPortfolioData, filteredMovimentiData);
             const stats = calculateStats(filteredPortfolioData, alignedMovements);
 
-            setAnalysisResults({ stats, alignedMovements });
+            return { stats, alignedMovements };
         } catch (e) {
             console.error("Error calculating analysis results:", e);
+            return null;
         }
     }, [globalPortfolioData, globalMovimentiData, dateRange]);
 
