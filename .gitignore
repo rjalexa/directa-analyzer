@@ -26,3 +26,6 @@ dist-ssr
 Asset*
 
 TODO.txt
+
+# Personal Directa exports (already-tracked test fixtures are unaffected)
+data/
