@@ -66,13 +66,16 @@ export function Instructions() {
                                 <span className="font-medium">Accedi a Directa</span> (piattaforma Libera da browser, non dalle App).
                             </li>
                             <li className="pl-2">
-                                Vai su: <span className="bg-gray-200 px-1.5 py-0.5 rounded text-gray-800 text-xs font-mono">Conto &rarr; Patrimonio &rarr; Storico</span>.
+                                Clicca sulla voce <span className="bg-gray-200 px-1.5 py-0.5 rounded text-gray-800 text-xs font-mono">Patrimonio</span> nella barra a sinistra.
                             </li>
                             <li className="pl-2">
-                                Seleziona l'intervallo di date desiderato (max 3 anni).
+                                Nella seconda riga dall'alto scegli <span className="bg-gray-200 px-1.5 py-0.5 rounded text-gray-800 text-xs font-mono">RENDIMENTO</span>.
                             </li>
                             <li className="pl-2">
-                                Clicca sull'icona <Download className="w-4 h-4 inline mx-1" /> sopra il grafico per scaricare il file <strong>CSV</strong>.
+                                Nell'angolo in alto a sinistra clicca su <strong>Scarica il report</strong> <Download className="w-4 h-4 inline mx-1" />.
+                            </li>
+                            <li className="pl-2">
+                                Scegli <strong>Valore patrimonio</strong>, poi l'intervallo di date desiderato ed infine il formato <strong>File separato da virgole (csv)</strong>.
                             </li>
                             <li className="pl-2">
                                 Carica quel file qui usando il box sopra.

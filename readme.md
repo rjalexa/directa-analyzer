@@ -45,10 +45,11 @@ Il progetto è basato su React e Vite. Assicurati di avere [Node.js](https://nod
 Per utilizzare lo strumento, è necessario esportare lo storico del patrimonio dalla piattaforma **Libera** di Directa:
 
 1.  Accedi al tuo conto su **Directa** (piattaforma Libera).
-2.  Naviga nel menu: **Conto** &rarr; **Patrimonio** &rarr; **Storico**.
-3.  Seleziona l'intervallo di date desiderato (nota: Directa permette solitamente un massimo di 3 anni per esportazione).
-4.  Clicca sull'icona di **Download** (solitamente una freccia verso il basso o un'icona CSV) situata sopra il grafico.
-5.  Verrà scaricato un file `.csv`. Carica questo file nell'applicazione.
+2.  Clicca sulla voce **Patrimonio** nella barra a sinistra.
+3.  Nella seconda riga dall'alto scegli **RENDIMENTO**.
+4.  Nell'angolo in alto a sinistra clicca su **Scarica il report**.
+5.  Scegli **Valore patrimonio**, poi l'intervallo di date desiderato ed infine il formato **File separato da virgole (csv)**.
+6.  Verrà scaricato un file `.csv`. Carica questo file nell'applicazione.
 
 ## 🧮 Modalità di Calcolo
 
