@@ -9,6 +9,56 @@ export function DateRangeFilter({ dateRange, setDateRange, minMaxDates, onReset 
         setDateRange(prev => ({ ...prev, [name]: value }));
     };
 
+    const getPredefinedRanges = () => {
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const maxDate = new Date(minMaxDates.maxDate);
+        
+        const ranges = {
+            'Ultimi 3 mesi': {
+                startDate: new Date(today.getFullYear(), today.getMonth() - 3, today.getDate()).toISOString().split('T')[0],
+                endDate: maxDate.toISOString().split('T')[0]
+            },
+            'Ultimi 6 mesi': {
+                startDate: new Date(today.getFullYear(), today.getMonth() - 6, today.getDate()).toISOString().split('T')[0],
+                endDate: maxDate.toISOString().split('T')[0]
+            },
+            'Ultimi 12 mesi': {
+                startDate: new Date(today.getFullYear(), today.getMonth() - 12, today.getDate()).toISOString().split('T')[0],
+                endDate: maxDate.toISOString().split('T')[0]
+            }
+        };
+        
+        return ranges;
+    };
+
+    const getAvailableYears = () => {
+        const minDate = new Date(minMaxDates.minDate);
+        const maxDate = new Date(minMaxDates.maxDate);
+        const minYear = minDate.getFullYear();
+        const maxYear = maxDate.getFullYear();
+        
+        const years = [];
+        for (let year = maxYear; year >= minYear; year--) {
+            years.push(year);
+        }
+        return years;
+    };
+
+    const applyYearRange = (year) => {
+        const startDate = `${year}-01-01`;
+        const endDate = `${year}-12-31`;
+        applyPredefinedRange({ startDate, endDate });
+    };
+
+    const applyPredefinedRange = (range) => {
+        const startDate = range.startDate < minMaxDates.minDate ? minMaxDates.minDate : range.startDate;
+        const endDate = range.endDate > minMaxDates.maxDate ? minMaxDates.maxDate : range.endDate;
+        setDateRange({ startDate, endDate });
+    };
+
+    const predefinedRanges = getPredefinedRanges();
+    const availableYears = getAvailableYears();
     const isModified = dateRange.startDate !== minMaxDates.minDate || dateRange.endDate !== minMaxDates.maxDate;
 
     return (
@@ -56,21 +106,6 @@ export function DateRangeFilter({ dateRange, setDateRange, minMaxDates, onReset 
                         className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2.5 border"
                     />
                 </div>
-            </div>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-                {[2023, 2024, 2025].map((year) => (
-                    <button
-                        key={year}
-                        onClick={() => setDateRange({
-                            startDate: `${year}-01-01`,
-                            endDate: `${year}-12-31`
-                        })}
-                        className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200"
-                    >
-                        {year}
-                    </button>
-                ))}
             </div>
         </div>
     );
