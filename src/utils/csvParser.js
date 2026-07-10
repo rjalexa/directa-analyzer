@@ -22,35 +22,51 @@ export function parseCSVContent(csvText) {
         };
     }
 
+    const headerLine = lines[headerIndex].trim();
+    const delimiter = headerLine.includes(';') ? ';' : ',';
+    const headerColumns = headerLine.split(delimiter).map(c => c.trim().toLowerCase());
+    const patrimonioIndex = headerColumns.indexOf('patrimonio');
+
+    if (patrimonioIndex === -1) {
+        return {
+            portfolioData: [],
+            movimentiData: [],
+            warnings: ["Colonna Patrimonio non trovata"],
+            error: "Formato CSV non valido: impossibile trovare la colonna Patrimonio"
+        };
+    }
+
     const portfolioData = [];
     const movimentiData = [];
     const warnings = [];
 
-    lines.slice(headerIndex + 1).forEach((line, index) => {
+    // Si parte dalla riga dell'header stesso: nel nuovo formato i movimenti
+    // iniziano sulla stessa riga dell'header del patrimonio (colonne 8+)
+    lines.slice(headerIndex).forEach((line, index) => {
         if (!line.trim()) return; // Salta righe vuote
 
-        const columns = line.split(',');
+        const columns = line.split(delimiter);
 
         try {
             // Parsing dati portafoglio (prima parte della riga)
-            if (columns[0]?.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+            if (isDate(columns[0])) {
                 portfolioData.push({
-                    date: columns[0].trim(),
-                    liquidita: parseFloat(columns[1]),
-                    finanziamento: parseFloat(columns[2]),
-                    patrimonio: parseFloat(columns[6])
+                    date: normalizeDate(columns[0].trim()),
+                    liquidita: parseNumber(columns[1]),
+                    finanziamento: parseNumber(columns[2]),
+                    patrimonio: parseNumber(columns[patrimonioIndex])
                 });
             }
 
             // Parsing movimenti (seconda parte della riga)
-            if (columns[8]?.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+            if (isDate(columns[8])) {
                 movimentiData.push({
-                    date: columns[8].trim(),
-                    value: parseFloat(columns[10])
+                    date: normalizeDate(columns[8].trim()),
+                    value: parseNumber(columns[10])
                 });
             }
         } catch (error) {
-            warnings.push(`Errore alla riga ${index + headerIndex + 2}: ${error.message}`);
+            warnings.push(`Errore alla riga ${index + headerIndex + 1}: ${error.message}`);
         }
     });
 
@@ -62,8 +78,31 @@ export function parseCSVContent(csvText) {
     };
 }
 
+function isDate(value) {
+    return /^\d{1,2}\/\d{1,2}\/(\d{2}|\d{4})$/.test(value?.trim() ?? '');
+}
+
+// Normalizza al formato interno DD/MM/YYYY.
+// Vecchio formato: DD/MM/YYYY (già conforme).
+// Nuovo formato: M/D/YY, con il mese prima del giorno e anno a due cifre.
+function normalizeDate(dateStr) {
+    const parts = dateStr.split('/');
+    if (parts[2].length === 4) {
+        return dateStr;
+    }
+    const [month, day, year] = parts;
+    return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/20${year}`;
+}
+
+// Il nuovo formato usa la virgola come separatore decimale (es. "52011,04")
+function parseNumber(value) {
+    return parseFloat(String(value ?? '').replace(',', '.'));
+}
+
 function findHeaderIndex(lines) {
-    const headerPattern = /^Data,Liquidità,Finanaziamento long,Garanzia short,Portafoglio,Margini compnensati,Patrimonio/i;
+    // Copre sia il vecchio formato (virgole, "Finanaziamento" con refuso,
+    // colonna "Margini compnensati") sia il nuovo (punti e virgola, senza Margini)
+    const headerPattern = /^Data[,;]Liquidità[,;]Finan\w*iamento long[,;]Garanzia short[,;]Portafoglio[,;]/i;
 
     // Cerca l'header in tutte le righe
     for (let i = 0; i < lines.length; i++) {
