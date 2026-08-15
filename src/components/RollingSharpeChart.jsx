@@ -23,9 +23,14 @@ ChartJS.register(
     Legend
 );
 
-export function RollingSharpeChart({ dailyGains, referenceChartHiddenDatasets = [] }) {
+export function RollingSharpeChart({
+    dailyGains,
+    referenceChartHiddenDatasets = [],
+    windowSize = 60,
+    color = 'rgb(147, 51, 234)' // purple-600
+}) {
     const [showInfo, setShowInfo] = useState(false);
-    const rollingSharpe = calculateRollingSharpe(dailyGains, 60); // 60 days window
+    const rollingSharpe = calculateRollingSharpe(dailyGains, windowSize);
 
     // Calculate padding to align with PerformanceChart
     const isMovimentiHidden = referenceChartHiddenDatasets.includes(2);
@@ -43,10 +48,10 @@ export function RollingSharpeChart({ dailyGains, referenceChartHiddenDatasets = 
         labels: rollingSharpe.map(d => d.date),
         datasets: [
             {
-                label: 'Rolling Sharpe Ratio (60 days)',
+                label: `Rolling Sharpe Ratio (${windowSize} days)`,
                 data: rollingSharpe.map(d => d.sharpe),
-                borderColor: 'rgb(147, 51, 234)', // purple-600
-                backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                borderColor: color,
+                backgroundColor: color.replace('rgb(', 'rgba(').replace(')', ', 0.1)'),
                 borderWidth: 2,
                 pointRadius: 0,
                 pointHoverRadius: 4,
@@ -99,7 +104,7 @@ export function RollingSharpeChart({ dailyGains, referenceChartHiddenDatasets = 
     return (
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <div className="flex items-center gap-2 mb-6">
-                <h3 className="text-lg font-bold text-gray-900">Rolling Sharpe Ratio (60 Days)</h3>
+                <h3 className="text-lg font-bold text-gray-900">Rolling Sharpe Ratio ({windowSize} Days)</h3>
                 <div
                     className="relative"
                     onMouseEnter={() => setShowInfo(true)}
@@ -110,7 +115,7 @@ export function RollingSharpeChart({ dailyGains, referenceChartHiddenDatasets = 
                     {showInfo && (
                         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-80 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl z-50 font-normal">
                             <p className="font-bold mb-1">Cos'è questo grafico?</p>
-                            <p>L'indice di Sharpe misura il rendimento corretto per il rischio. Questo grafico mostra l'indice calcolato su una finestra mobile di 60 giorni.</p>
+                            <p>L'indice di Sharpe misura il rendimento corretto per il rischio. Questo grafico mostra l'indice calcolato su una finestra mobile di {windowSize} giorni.</p>
                             <p className="mt-2">Un valore più alto indica un miglior rendimento per unità di rischio.</p>
                             <p className="mt-1 font-mono text-[10px]">Formula: (Rendimento Medio / Dev. Std) * √252</p>
                             <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
@@ -119,7 +124,13 @@ export function RollingSharpeChart({ dailyGains, referenceChartHiddenDatasets = 
                 </div>
             </div>
             <div className="h-[300px] w-full">
-                <Line data={data} options={options} />
+                {rollingSharpe.length > 0 ? (
+                    <Line data={data} options={options} />
+                ) : (
+                    <div className="h-full flex items-center justify-center text-sm text-gray-400 text-center px-4">
+                        Servono almeno {windowSize} giorni di dati per calcolare questa finestra mobile.
+                    </div>
+                )}
             </div>
         </div>
     );

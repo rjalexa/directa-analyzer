@@ -58,8 +58,15 @@ function App() {
                         <RollingSharpeChart
                             dailyGains={analysisResults.stats.dailyGains}
                             referenceChartHiddenDatasets={performanceChartHiddenDatasets}
+                            windowSize={60}
                         />
-                        
+                        <RollingSharpeChart
+                            dailyGains={analysisResults.stats.dailyGains}
+                            referenceChartHiddenDatasets={performanceChartHiddenDatasets}
+                            windowSize={252}
+                            color="rgb(13, 148, 136)" // teal-600
+                        />
+
                         <MonthlyReturnsHeatmap dailyGains={analysisResults.stats.dailyGains} />
                     </div>
                 </>

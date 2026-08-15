@@ -35,9 +35,10 @@ export function calculateRollingSharpe(dailyGains, windowSize = 60) {
         return (currCum / prevCum) - 1;
     });
 
-    for (let i = windowSize; i < dailyGains.length; i++) {
-        const windowReturns = dailyReturns.slice(i - windowSize, i);
-        
+    // Each point covers the window ENDING on day i, so it is labelled with day i's date.
+    for (let i = windowSize - 1; i < dailyGains.length; i++) {
+        const windowReturns = dailyReturns.slice(i - windowSize + 1, i + 1);
+
         const averageReturn = windowReturns.reduce((sum, val) => sum + val, 0) / windowSize;
         
         const variance = windowReturns.reduce((sum, val) => sum + Math.pow(val - averageReturn, 2), 0) / windowSize;
