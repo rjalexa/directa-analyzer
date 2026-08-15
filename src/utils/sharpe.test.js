@@ -179,7 +179,7 @@ describe('windowAdvice', () => {
 });
 
 describe('cash-flow contamination guard', () => {
-    // A contribution must never be read as a return. Mirrors returnExFlow in
+    // A contribution must never be read as a return. Mirrors dailyReturn in
     // calculateStats: gainLoss is net of the flow, over the previous value.
     const dailyReturn = (prevValue, flow, value) => (value - prevValue - flow) / prevValue;
 

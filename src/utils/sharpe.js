@@ -68,12 +68,12 @@ export function assertSamplingFrequency(dates) {
 /**
  * Per-period returns, net of cash flows.
  *
- * Uses returnExFlow from calculateStats: gainLoss is already the market move
- * with the contribution removed, over the previous day's value. A deposit
- * therefore cannot register as a return.
+ * dailyReturn from calculateStats is the single canonical daily return for the
+ * whole app: the market move with the contribution removed, over the previous
+ * day's value. A deposit therefore cannot register as a return.
  */
 export function toDailyReturns(dailyGains) {
-    return dailyGains.map((day) => day.returnExFlow ?? 0);
+    return dailyGains.map((day) => day.dailyReturn ?? 0);
 }
 
 /** Annualised Sharpe ratio of a return window. NaN when it is undefined. */

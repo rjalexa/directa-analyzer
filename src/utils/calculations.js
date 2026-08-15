@@ -190,12 +190,15 @@ export function calculateStats(portfolioData, alignedMovements) {
                 weightedAverageCapital += movimentiGiorno * weight;
             }
 
-            // Calcolo TWRR
-            const startCapital = previousPatrimonio + movimentiGiorno;
-            if (startCapital > 0) {
-                const dailyReturn = gainLoss / startCapital;
-                cumulativeTWRR = cumulativeTWRR * (1 + dailyReturn);
-            }
+            // Rendimento giornaliero al netto dei flussi, base canonica per
+            // ogni metrica derivata (TWRR, CAGR, drawdown, Sharpe ratio).
+            // gainLoss è già il movimento di mercato senza il conferimento; il
+            // flusso NON entra nella base, cioè si assume che arrivi a fine
+            // giornata e non produca rendimento quel giorno. È la convenzione
+            // standard del TWR giornaliero: su Directa un bonifico arriva in
+            // liquidità e resta non investito finché non si opera.
+            const dailyReturn = previousPatrimonio > 0 ? gainLoss / previousPatrimonio : 0;
+            cumulativeTWRR = cumulativeTWRR * (1 + dailyReturn);
 
             dailyGains.push({
                 date: day.date,
@@ -204,11 +207,7 @@ export function calculateStats(portfolioData, alignedMovements) {
                 cumulativeInvestment: cumulativeInvestment,
                 totalValue: currentPatrimonio,
                 twrr: cumulativeTWRR - 1,
-                // Daily return with the flow excluded from the base, i.e. a
-                // contribution is assumed to arrive at the end of the day and
-                // earn nothing that day. The Sharpe path uses this; twrr above
-                // keeps its own start-of-day convention untouched.
-                returnExFlow: previousPatrimonio > 0 ? gainLoss / previousPatrimonio : 0
+                dailyReturn
             });
         }
         previousPatrimonio = day.patrimonio;

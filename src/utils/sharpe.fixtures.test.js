@@ -10,6 +10,7 @@ import path from 'node:path';
 import { describe, it, expect } from 'vitest';
 import { parseCSVContent } from './csvParser';
 import { alignMovementDates, calculateStats } from './calculations';
+import { calculateDrawdowns } from './advancedCalculations';
 import {
     ANNUALISATION,
     PERIODS_PER_YEAR,
@@ -32,9 +33,13 @@ function findExport() {
 
 const exportPath = findExport();
 
-function loadReturns() {
+function loadStats() {
     const { portfolioData, movimentiData } = parseCSVContent(fs.readFileSync(exportPath, 'utf8'));
-    const stats = calculateStats(portfolioData, alignMovementDates(portfolioData, movimentiData));
+    return calculateStats(portfolioData, alignMovementDates(portfolioData, movimentiData));
+}
+
+function loadReturns() {
+    const stats = loadStats();
     return {
         returns: toDailyReturns(stats.dailyGains),
         dates: stats.dailyGains.map((d) => d.date)
@@ -71,6 +76,28 @@ describe.skipIf(!exportPath)('section 7 fixtures (real 526-day export)', () => {
         const point = rollingSharpe(returns, dates, window, 0).find((p) => p.date === date);
         expect(point, `date ${date} missing from the export`).toBeDefined();
         expect(point.sharpe).toBeCloseTo(expected, 3);
+    });
+
+    // Pinned when TWRR, CAGR and drawdown were unified onto the same daily
+    // return as the Sharpe path (flow excluded from the base). Cross-checked
+    // against a re-derivation straight from the CSV, independent of
+    // calculateStats. If these move, a convention changed somewhere.
+    it('matches the pinned headline figures', () => {
+        const stats = loadStats();
+        expect(stats.totalTwrr).toBeCloseTo(0.16342148, 6);
+        expect(stats.cagr).toBeCloseTo(0.11082917, 6);
+    });
+
+    it('matches the pinned maximum drawdown', () => {
+        const drawdowns = calculateDrawdowns(loadStats().dailyGains);
+        const maxDrawdown = Math.min(...drawdowns.map((d) => d.drawdown));
+        expect(maxDrawdown).toBeCloseTo(-5.830504, 4);
+    });
+
+    it('derives twrr from the same daily return the Sharpe path uses', () => {
+        const stats = loadStats();
+        const chained = stats.dailyGains.reduce((acc, d) => acc * (1 + d.dailyReturn), 1) - 1;
+        expect(chained).toBeCloseTo(stats.totalTwrr, 12);
     });
 
     it('never reads a contribution as a return', () => {
