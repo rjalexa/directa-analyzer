@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { parseCSV } from '../utils/csvParser';
 import { alignMovementDates, calculateStats } from '../utils/calculations';
+import { assertSamplingFrequency } from '../utils/sharpe';
 
 export function usePortfolioAnalysis() {
     const [globalPortfolioData, setGlobalPortfolioData] = useState([]);
@@ -25,6 +26,10 @@ export function usePortfolioAnalysis() {
             if (data.warnings.length > 0) {
                 console.warn('CSV Parsing Warnings:', data.warnings);
             }
+
+            // Fail loudly if the row spacing does not match the annualisation
+            // constant, rather than silently producing a wrong Sharpe ratio.
+            assertSamplingFrequency(data.portfolioData.map(d => d.date));
 
             setGlobalPortfolioData(data.portfolioData);
             setGlobalMovimentiData(data.movimentiData);

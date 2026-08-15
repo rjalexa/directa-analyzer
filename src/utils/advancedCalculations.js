@@ -18,51 +18,8 @@ export function calculateDrawdowns(dailyGains) {
     return drawdowns;
 }
 
-export function calculateRollingSharpe(dailyGains, windowSize = 60) {
-    const rollingSharpe = [];
-    
-    // We need daily returns, not cumulative.
-    // dailyGains has cumulativeTWRR.
-    // Daily Return[i] = (1 + TWRR[i]) / (1 + TWRR[i-1]) - 1
-    
-    const dailyReturns = dailyGains.map((day, index) => {
-        if (index === 0) {
-            // For the first day, we can assume the return is (1 + twrr) - 1 if start was 0
-            return day.twrr; 
-        }
-        const prevCum = 1 + dailyGains[index - 1].twrr;
-        const currCum = 1 + day.twrr;
-        return (currCum / prevCum) - 1;
-    });
-
-    // Each point covers the window ENDING on day i, so it is labelled with day i's date.
-    for (let i = windowSize - 1; i < dailyGains.length; i++) {
-        const windowReturns = dailyReturns.slice(i - windowSize + 1, i + 1);
-
-        const averageReturn = windowReturns.reduce((sum, val) => sum + val, 0) / windowSize;
-        
-        const variance = windowReturns.reduce((sum, val) => sum + Math.pow(val - averageReturn, 2), 0) / windowSize;
-        const stdDev = Math.sqrt(variance);
-        
-        // Annualize (assuming 252 trading days)
-        // Sharpe = (Avg Daily Return - Risk Free) / Std Dev
-        // We'll assume Risk Free = 0
-        
-        let sharpe = 0;
-        if (stdDev !== 0) {
-            // Annualized Sharpe = Daily Sharpe * sqrt(252)
-            // Daily Sharpe = Avg Daily Return / Daily Std Dev
-            sharpe = (averageReturn / stdDev) * Math.sqrt(252);
-        }
-        
-        rollingSharpe.push({
-            date: dailyGains[i].date,
-            sharpe: sharpe
-        });
-    }
-    
-    return rollingSharpe;
-}
+// Rolling Sharpe now lives in src/utils/sharpe.js, which centralises the
+// annualisation convention and the risk-free rate.
 
 export function calculateMonthlyReturns(dailyGains) {
     const monthlyReturns = {};

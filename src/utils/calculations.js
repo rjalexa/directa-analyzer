@@ -203,7 +203,12 @@ export function calculateStats(portfolioData, alignedMovements) {
                 cumulativeGainLoss: cumulativeGainLoss,
                 cumulativeInvestment: cumulativeInvestment,
                 totalValue: currentPatrimonio,
-                twrr: cumulativeTWRR - 1
+                twrr: cumulativeTWRR - 1,
+                // Daily return with the flow excluded from the base, i.e. a
+                // contribution is assumed to arrive at the end of the day and
+                // earn nothing that day. The Sharpe path uses this; twrr above
+                // keeps its own start-of-day convention untouched.
+                returnExFlow: previousPatrimonio > 0 ? gainLoss / previousPatrimonio : 0
             });
         }
         previousPatrimonio = day.patrimonio;
