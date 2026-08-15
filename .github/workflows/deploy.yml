@@ -1,12 +1,15 @@
-name: Deploy Vite app to GitHub Pages
+name: Check and deploy Vite app
 
 on:
   push:
     branches:
       - main    # deploy whenever you push here
+  pull_request:
+    branches:
+      - main    # lint and build PRs, but never deploy them
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -36,6 +39,7 @@ jobs:
         run: pnpm build
 
       - name: Deploy to gh-pages
+        if: github.event_name == 'push'   # PRs stop after lint + build
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
